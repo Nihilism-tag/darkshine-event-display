@@ -1541,11 +1541,13 @@ const fpsState = {
 function updateFpsMeter(now) {
   const dt = now - fpsState.lastTs;
   fpsState.lastTs = now;
-  if (dt > 0 && dt < 1000) {
+  if (dt > 0 && dt < 5000) {
     fpsState.frames += 1;
     fpsState.accMs += dt;
   }
-  if (fpsState.accMs >= 380 && fpsState.frames > 0) {
+  const windowReady = fpsState.accMs >= 320 || (!fpsState.seeded && fpsState.frames >= 3 && fpsState.accMs > 0);
+  if (windowReady && fpsState.frames > 0) {
+    fpsState.seeded = true;
     const avgMs = fpsState.accMs / fpsState.frames;
     const fps = Math.round(1000 / avgMs);
     fpsState.frames = 0;
