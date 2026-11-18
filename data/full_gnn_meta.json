@@ -1,0 +1,302 @@
+{
+  "n_events": 149859,
+  "shard_size": 37465,
+  "shards": [
+    {
+      "file": "full_gnn_s0.bin",
+      "ev_start": 0,
+      "ev_end": 37465,
+      "n_events": 37465,
+      "total_bytes": 23650648,
+      "sections": {
+        "pos_off": {
+          "byteOffset": 0,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "positions": {
+          "byteOffset": 149864,
+          "length": 998352,
+          "dtype": "float32"
+        },
+        "layer_id": {
+          "byteOffset": 4143272,
+          "length": 332784,
+          "dtype": "uint8"
+        },
+        "edge_off": {
+          "byteOffset": 4476056,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "edge_u": {
+          "byteOffset": 4625920,
+          "length": 2009456,
+          "dtype": "uint16"
+        },
+        "edge_v": {
+          "byteOffset": 8644832,
+          "length": 2009456,
+          "dtype": "uint16"
+        },
+        "edge_truth": {
+          "byteOffset": 12663744,
+          "length": 2009456,
+          "dtype": "uint8"
+        },
+        "prob_v5": {
+          "byteOffset": 14673200,
+          "length": 2009456,
+          "dtype": "uint16"
+        },
+        "prob_v6": {
+          "byteOffset": 18692112,
+          "length": 2009456,
+          "dtype": "uint16"
+        },
+        "mc_ev_off": {
+          "byteOffset": 22711024,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "mc_trk_off": {
+          "byteOffset": 22860888,
+          "length": 39534,
+          "dtype": "uint32"
+        },
+        "mc_hits": {
+          "byteOffset": 23019024,
+          "length": 236745,
+          "dtype": "uint16"
+        },
+        "mc_ids": {
+          "byteOffset": 23492516,
+          "length": 39533,
+          "dtype": "int32"
+        }
+      }
+    },
+    {
+      "file": "full_gnn_s1.bin",
+      "ev_start": 37465,
+      "ev_end": 74930,
+      "n_events": 37465,
+      "total_bytes": 19368488,
+      "sections": {
+        "pos_off": {
+          "byteOffset": 0,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "positions": {
+          "byteOffset": 149864,
+          "length": 1018686,
+          "dtype": "float32"
+        },
+        "layer_id": {
+          "byteOffset": 4224608,
+          "length": 339562,
+          "dtype": "uint8"
+        },
+        "edge_off": {
+          "byteOffset": 4564172,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "edge_u": {
+          "byteOffset": 4714036,
+          "length": 1523543,
+          "dtype": "uint16"
+        },
+        "edge_v": {
+          "byteOffset": 7761124,
+          "length": 1523543,
+          "dtype": "uint16"
+        },
+        "edge_truth": {
+          "byteOffset": 10808212,
+          "length": 1523543,
+          "dtype": "uint8"
+        },
+        "prob_v5": {
+          "byteOffset": 12331756,
+          "length": 1523543,
+          "dtype": "uint16"
+        },
+        "prob_v6": {
+          "byteOffset": 15378844,
+          "length": 1523543,
+          "dtype": "uint16"
+        },
+        "mc_ev_off": {
+          "byteOffset": 18425932,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "mc_trk_off": {
+          "byteOffset": 18575796,
+          "length": 39693,
+          "dtype": "uint32"
+        },
+        "mc_hits": {
+          "byteOffset": 18734568,
+          "length": 237575,
+          "dtype": "uint16"
+        },
+        "mc_ids": {
+          "byteOffset": 19209720,
+          "length": 39692,
+          "dtype": "int32"
+        }
+      }
+    },
+    {
+      "file": "full_gnn_s2.bin",
+      "ev_start": 74930,
+      "ev_end": 112395,
+      "n_events": 37465,
+      "total_bytes": 18310888,
+      "sections": {
+        "pos_off": {
+          "byteOffset": 0,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "positions": {
+          "byteOffset": 149864,
+          "length": 1014147,
+          "dtype": "float32"
+        },
+        "layer_id": {
+          "byteOffset": 4206452,
+          "length": 338049,
+          "dtype": "uint8"
+        },
+        "edge_off": {
+          "byteOffset": 4544504,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "edge_u": {
+          "byteOffset": 4694368,
+          "length": 1408237,
+          "dtype": "uint16"
+        },
+        "edge_v": {
+          "byteOffset": 7510844,
+          "length": 1408237,
+          "dtype": "uint16"
+        },
+        "edge_truth": {
+          "byteOffset": 10327320,
+          "length": 1408237,
+          "dtype": "uint8"
+        },
+        "prob_v5": {
+          "byteOffset": 11735560,
+          "length": 1408237,
+          "dtype": "uint16"
+        },
+        "prob_v6": {
+          "byteOffset": 14552036,
+          "length": 1408237,
+          "dtype": "uint16"
+        },
+        "mc_ev_off": {
+          "byteOffset": 17368512,
+          "length": 37466,
+          "dtype": "uint32"
+        },
+        "mc_trk_off": {
+          "byteOffset": 17518376,
+          "length": 39671,
+          "dtype": "uint32"
+        },
+        "mc_hits": {
+          "byteOffset": 17677060,
+          "length": 237574,
+          "dtype": "uint16"
+        },
+        "mc_ids": {
+          "byteOffset": 18152208,
+          "length": 39670,
+          "dtype": "int32"
+        }
+      }
+    },
+    {
+      "file": "full_gnn_s3.bin",
+      "ev_start": 112395,
+      "ev_end": 149859,
+      "n_events": 37464,
+      "total_bytes": 19165128,
+      "sections": {
+        "pos_off": {
+          "byteOffset": 0,
+          "length": 37465,
+          "dtype": "uint32"
+        },
+        "positions": {
+          "byteOffset": 149860,
+          "length": 1014669,
+          "dtype": "float32"
+        },
+        "layer_id": {
+          "byteOffset": 4208536,
+          "length": 338223,
+          "dtype": "uint8"
+        },
+        "edge_off": {
+          "byteOffset": 4546760,
+          "length": 37465,
+          "dtype": "uint32"
+        },
+        "edge_u": {
+          "byteOffset": 4696620,
+          "length": 1503030,
+          "dtype": "uint16"
+        },
+        "edge_v": {
+          "byteOffset": 7702680,
+          "length": 1503030,
+          "dtype": "uint16"
+        },
+        "edge_truth": {
+          "byteOffset": 10708740,
+          "length": 1503030,
+          "dtype": "uint8"
+        },
+        "prob_v5": {
+          "byteOffset": 12211772,
+          "length": 1503030,
+          "dtype": "uint16"
+        },
+        "prob_v6": {
+          "byteOffset": 15217832,
+          "length": 1503030,
+          "dtype": "uint16"
+        },
+        "mc_ev_off": {
+          "byteOffset": 18223892,
+          "length": 37465,
+          "dtype": "uint32"
+        },
+        "mc_trk_off": {
+          "byteOffset": 18373752,
+          "length": 39608,
+          "dtype": "uint32"
+        },
+        "mc_hits": {
+          "byteOffset": 18532184,
+          "length": 237257,
+          "dtype": "uint16"
+        },
+        "mc_ids": {
+          "byteOffset": 19006700,
+          "length": 39607,
+          "dtype": "int32"
+        }
+      }
+    }
+  ]
+}
