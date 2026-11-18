@@ -74,6 +74,7 @@ const state = {
   activeTab: 'summary',   // 'summary' | 'diagnostics'
   menuOpen: true,
   cardOpen: true,
+  fpsOpen: true,
   cleanMode: false,
 };
 
@@ -1294,6 +1295,9 @@ function syncUIButtons() {
   document.getElementById('hud-menu').classList.toggle('hidden', state.cleanMode);
   document.getElementById('hud-card').classList.toggle('hidden', state.cleanMode);
   document.getElementById('hud-dock').classList.toggle('hidden', state.cleanMode);
+  document.getElementById('hud-fps').classList.toggle('hidden', state.cleanMode);
+  document.getElementById('fps-body').classList.toggle('hidden', !state.fpsOpen);
+  document.getElementById('fps-mini').classList.toggle('hidden', state.fpsOpen);
   document.getElementById('btn-exit-clean').classList.toggle('hidden', !state.cleanMode);
 }
 
@@ -1523,11 +1527,63 @@ function wireControls() {
 
   bindClick('dock-clean', () => { state.cleanMode = true; syncUIButtons(); });
   bindClick('btn-exit-clean', () => { state.cleanMode = false; syncUIButtons(); });
+  bindClick('hud-fps', () => { state.fpsOpen = !state.fpsOpen; syncUIButtons(); });
+}
+
+// ── Live FPS & Frame-Time Telemetry ──
+const fpsState = {
+  frames: 0,
+  accMs: 0,
+  lastTs: performance.now(),
+  history: [],
+};
+
+function updateFpsMeter(now) {
+  const dt = now - fpsState.lastTs;
+  fpsState.lastTs = now;
+  if (dt > 0 && dt < 1000) {
+    fpsState.frames += 1;
+    fpsState.accMs += dt;
+  }
+  if (fpsState.accMs >= 380 && fpsState.frames > 0) {
+    const avgMs = fpsState.accMs / fpsState.frames;
+    const fps = Math.round(1000 / avgMs);
+    fpsState.frames = 0;
+    fpsState.accMs = 0;
+
+    fpsState.history.push(Math.min(120, fps));
+    if (fpsState.history.length > 24) fpsState.history.shift();
+
+    const col = fps >= 50 ? '#178e89' : (fps >= 25 ? '#e68613' : '#d9534f');
+    document.getElementById('fps-dot').style.background = col;
+    document.getElementById('fps-val').textContent = `${fps} FPS`;
+    document.getElementById('fps-ms').textContent = `${avgMs.toFixed(1)} ms`;
+
+    const sp = document.getElementById('fps-spark');
+    const ctx = sp.getContext('2d');
+    const w = sp.width, h = sp.height;
+    ctx.clearRect(0, 0, w, h);
+    const hist = fpsState.history;
+    if (hist.length > 1) {
+      const maxF = Math.max(65, ...hist);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (let i = 0; i < hist.length; i++) {
+        const x = (i / (hist.length - 1)) * (w - 2) + 1;
+        const y = h - 1.5 - (Math.min(maxF, hist[i]) / maxF) * (h - 3);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
 }
 
 // ── Main Render Loop ──
-function renderFrame() {
+function renderFrame(now = performance.now()) {
   requestAnimationFrame(renderFrame);
+  updateFpsMeter(now);
 
   const stage = document.getElementById('dsv-stage');
   const w = stage.clientWidth;

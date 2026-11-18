@@ -573,6 +573,70 @@ input[type="range"] {
   color: var(--fg-primary);
 }
 
+/* Zone 5: Bottom-Left Collapsible FPS Telemetry Box */
+.phx-fps {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 9px;
+  background: rgba(20, 23, 28, 0.90);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  backdrop-filter: blur(12px);
+  z-index: 24;
+  cursor: pointer;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.phx-fps:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.fps-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--col-v5);
+  flex-shrink: 0;
+}
+
+.fps-body {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fps-val {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  letter-spacing: 0.02em;
+}
+
+.fps-ms {
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+
+.fps-spark {
+  width: 40px;
+  height: 12px;
+  opacity: 0.88;
+}
+
+.fps-chev,
+.fps-label-mini {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  letter-spacing: 0.03em;
+}
+
 /* Clean Screenshot Exit Pill */
 .clean-exit {
   position: absolute;
