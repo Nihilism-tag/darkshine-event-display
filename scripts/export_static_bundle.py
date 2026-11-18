@@ -231,7 +231,7 @@ def main() -> None:
     (out_dir / "cloud_meta.json").write_text(json.dumps({
         "schema_version": 2,
         "n_events": int(n_ev),
-        "station_z_mm": [7.83, 38.83, 89.83, 120.83, 151.83, 180.33],
+        "station_z_mm": [7.83, 22.83, 38.83, 53.83, 89.83, 180.33],
         "verified_cohorts": {
             "v6": {"both": 1909, "gnn_only": 1329, "ds_only": 232, "neither": 2021},
             "v5": {"both": 2000, "gnn_only": 1549, "ds_only": 141, "neither": 1801},

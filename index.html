@@ -258,7 +258,7 @@
             <label class="sw-item" style="--sw-col:#777f8c">
               <input type="checkbox" id="sw-stations" checked />
               <span class="sw-track"></span>
-              <span>N1–N6 station frames</span>
+              <span>Tracker geometry (Target + N1–N6)</span>
             </label>
             <label class="sw-item" style="--sw-col:#178e89" id="row-sw-bg-hits">
               <input type="checkbox" id="sw-bg-hits" checked />
@@ -339,9 +339,10 @@
       <button class="dock-btn" id="dock-zoom-out" title="Zoom out">−</button>
       <button class="dock-btn" id="dock-zoom-in" title="Zoom in">+</button>
       <div class="dock-sep"></div>
-      <button class="dock-btn active-teal" id="dock-cam-oblique">3D</button>
-      <button class="dock-btn" id="dock-cam-xz">X–Z</button>
-      <button class="dock-btn" id="dock-cam-yz">Y–Z</button>
+      <button class="dock-btn active-teal" id="dock-cam-oblique" title="3D oblique view">3D</button>
+      <button class="dock-btn" id="dock-cam-xz" title="Dipole bending plane X–Z view">X–Z</button>
+      <button class="dock-btn" id="dock-cam-yz" title="Non-bending stereo Y–Z view">Y–Z</button>
+      <button class="dock-btn" id="dock-cam-xy" title="Transverse beam's-eye X–Y view">X–Y</button>
       <div class="dock-sep"></div>
 
       <!-- Cloud Dock Group -->

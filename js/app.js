@@ -26,8 +26,16 @@ const HIT_LAYER_HEX = [
   0xe68613, // N6
 ];
 
-const STATION_Z = [7.83, 38.83, 89.83, 120.83, 151.83, 180.33];
-const CLOUD_BOX = { xMin: -68, xMax: 46, yMin: -52, yMax: 52 };
+const STATION_Z = [7.83, 22.83, 38.83, 53.83, 89.83, 180.33];
+const TARGET_SPEC = { wx: 200.0, ly: 100.0, z: 0.0, dz: 0.35 }; // G4_W 350 um target at z=0
+const RECOIL_STATIONS = [
+  { name: 'N1', z: 7.83,   wx: 201.0, ly: 100.0, a1: 0.0, a2: -0.05, dz: 0.15 },
+  { name: 'N2', z: 22.83,  wx: 201.0, ly: 100.0, a1: 0.0, a2: +0.05, dz: 0.15 },
+  { name: 'N3', z: 38.83,  wx: 201.0, ly: 100.0, a1: 0.0, a2: -0.05, dz: 0.15 },
+  { name: 'N4', z: 53.83,  wx: 240.0, ly: 115.0, a1: 0.0, a2: +0.05, dz: 0.15 },
+  { name: 'N5', z: 89.83,  wx: 360.0, ly: 140.0, a1: 0.0, a2: -0.05, dz: 0.15 },
+  { name: 'N6', z: 180.33, wx: 501.0, ly: 200.0, a1: 0.0, a2: +0.05, dz: 0.15 },
+];
 
 // ── App State ──
 const state = {
@@ -148,42 +156,163 @@ function setLoadingBanner(visible, msg = '') {
   mask.classList.toggle('hidden', !visible);
 }
 
-// ── Station Wireframe Builder ──
-function buildStationFramesGeometry(bounds) {
-  const { xMin, xMax, yMin, yMax } = bounds;
-  const segs = [];
-  for (const z of STATION_Z) {
-    segs.push(
-      xMin, yMin, z, xMax, yMin, z,
-      xMax, yMin, z, xMax, yMax, z,
-      xMax, yMax, z, xMin, yMax, z,
-      xMin, yMax, z, xMin, yMin, z
-    );
-  }
-  const z0 = STATION_Z[0];
-  const z1 = STATION_Z[STATION_Z.length - 1];
-  for (const [cx, cy] of [[xMin, yMin], [xMax, yMin], [xMax, yMax], [xMin, yMax]]) {
-    segs.push(cx, cy, z0, cx, cy, z1);
-  }
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(segs), 3));
-  return geom;
+// ── Physical DarkSHINE Recoil Tracker Geometry (Target G4_W + 6 Double-Plane Si Stations) ──
+function rotCorner(u, v, angleRad, z) {
+  const c = Math.cos(angleRad);
+  const s = Math.sin(angleRad);
+  // Matches TrkConstruct.cc HepRot->rotateZ(fAngle): u_meas = x cos(a) - y sin(a)
+  return [u * c + v * s, -u * s + v * c, z];
 }
 
-const CLOUD_STATION_GEOM = buildStationFramesGeometry(CLOUD_BOX);
+function pushRectLoop(out, wx, ly, angleRad, z) {
+  const hx = 0.5 * wx;
+  const hy = 0.5 * ly;
+  const p0 = rotCorner(-hx, -hy, angleRad, z);
+  const p1 = rotCorner(+hx, -hy, angleRad, z);
+  const p2 = rotCorner(+hx, +hy, angleRad, z);
+  const p3 = rotCorner(-hx, +hy, angleRad, z);
+  out.push(
+    ...p0, ...p1,
+    ...p1, ...p2,
+    ...p2, ...p3,
+    ...p3, ...p0,
+  );
+}
 
-// ── Camera Presets ──
+function pushQuadTris(outPos, wx, ly, angleRad, z) {
+  const hx = 0.5 * wx;
+  const hy = 0.5 * ly;
+  const p0 = rotCorner(-hx, -hy, angleRad, z);
+  const p1 = rotCorner(+hx, -hy, angleRad, z);
+  const p2 = rotCorner(+hx, +hy, angleRad, z);
+  const p3 = rotCorner(-hx, +hy, angleRad, z);
+  outPos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+}
+
+const TRACKER_GEOM_ASSETS = (() => {
+  const axialSegs = [];
+  const stereoSegs = [];
+  const fiducialSegs = [];
+  const targetSegs = [];
+  const siTris = [];
+  const targetTris = [];
+
+  // G4_W Target box (200 x 100 x 0.35 mm centered at z = 0)
+  const tz0 = TARGET_SPEC.z - 0.5 * TARGET_SPEC.dz;
+  const tz1 = TARGET_SPEC.z + 0.5 * TARGET_SPEC.dz;
+  pushRectLoop(targetSegs, TARGET_SPEC.wx, TARGET_SPEC.ly, 0.0, tz0);
+  pushRectLoop(targetSegs, TARGET_SPEC.wx, TARGET_SPEC.ly, 0.0, tz1);
+  for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    const cx = sx * 0.5 * TARGET_SPEC.wx;
+    const cy = sy * 0.5 * TARGET_SPEC.ly;
+    targetSegs.push(cx, cy, tz0, cx, cy, tz1);
+  }
+  pushQuadTris(targetTris, TARGET_SPEC.wx, TARGET_SPEC.ly, 0.0, TARGET_SPEC.z);
+
+  // N1..N6 Recoil Tracker stations: Plane A (a1 = 0) + Stereo Plane B (a2 = ∓0.05 rad)
+  for (const st of RECOIL_STATIONS) {
+    const zA = st.z - 0.5 * st.dz;
+    const zB = st.z + 0.5 * st.dz;
+    pushRectLoop(axialSegs, st.wx, st.ly, st.a1, zA);
+    pushRectLoop(stereoSegs, st.wx, st.ly, st.a2, zB);
+    pushQuadTris(siTris, st.wx, st.ly, st.a1, st.z);
+
+    // Subtle center fiducial crosshairs at beam axis (x=0, y=0) on each station
+    const tickX = Math.min(18.0, 0.12 * st.wx);
+    const tickY = Math.min(18.0, 0.16 * st.ly);
+    fiducialSegs.push(-tickX, 0, st.z, +tickX, 0, st.z);
+    fiducialSegs.push(0, -tickY, st.z, 0, +tickY, st.z);
+  }
+
+  // Beamline axis (x=0, y=0) from upstream of Target (-18 mm) through N6 (+194 mm)
+  fiducialSegs.push(0, 0, -18.0, 0, 0, STATION_Z[STATION_Z.length - 1] + 14.0);
+
+  const mkBuf = (arr) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(arr), 3));
+    return g;
+  };
+  return {
+    axialGeom: mkBuf(axialSegs),
+    stereoGeom: mkBuf(stereoSegs),
+    fiducialGeom: mkBuf(fiducialSegs),
+    targetGeom: mkBuf(targetSegs),
+    siSurfGeom: mkBuf(siTris),
+    targetSurfGeom: mkBuf(targetTris),
+  };
+})();
+
+function createTrackerGeometryGroup() {
+  const grp = new THREE.Group();
+
+  const siMesh = new THREE.Mesh(
+    TRACKER_GEOM_ASSETS.siSurfGeom,
+    new THREE.MeshBasicMaterial({
+      color: 0x3b4a5e, transparent: true, opacity: 0.028,
+      side: THREE.DoubleSide, depthWrite: false,
+    }),
+  );
+  siMesh.renderOrder = -3;
+  grp.add(siMesh);
+
+  const tgtMesh = new THREE.Mesh(
+    TRACKER_GEOM_ASSETS.targetSurfGeom,
+    new THREE.MeshBasicMaterial({
+      color: 0xa68958, transparent: true, opacity: 0.045,
+      side: THREE.DoubleSide, depthWrite: false,
+    }),
+  );
+  tgtMesh.renderOrder = -3;
+  grp.add(tgtMesh);
+
+  const tgtLines = new THREE.LineSegments(
+    TRACKER_GEOM_ASSETS.targetGeom,
+    new THREE.LineBasicMaterial({ color: 0xa68958, transparent: true, opacity: 0.42, depthWrite: false }),
+  );
+  tgtLines.renderOrder = -2;
+  grp.add(tgtLines);
+
+  const stereoLines = new THREE.LineSegments(
+    TRACKER_GEOM_ASSETS.stereoGeom,
+    new THREE.LineBasicMaterial({ color: 0x4d8092, transparent: true, opacity: 0.30, depthWrite: false }),
+  );
+  stereoLines.renderOrder = -2;
+  grp.add(stereoLines);
+
+  const axialLines = new THREE.LineSegments(
+    TRACKER_GEOM_ASSETS.axialGeom,
+    new THREE.LineBasicMaterial({ color: 0x828c9c, transparent: true, opacity: 0.36, depthWrite: false }),
+  );
+  axialLines.renderOrder = -1;
+  grp.add(axialLines);
+
+  const fidLines = new THREE.LineSegments(
+    TRACKER_GEOM_ASSETS.fiducialGeom,
+    new THREE.LineBasicMaterial({ color: 0x6b7482, transparent: true, opacity: 0.22, depthWrite: false }),
+  );
+  fidLines.renderOrder = -2;
+  grp.add(fidLines);
+
+  return grp;
+}
+
+// ── Camera Presets (3D, X–Z, Y–Z, X–Y) ──
 function applyCameraPreset(preset, boundsCenter = null, spanXY = 90, spanZ = 180) {
   state.cameraPreset = preset;
   const isDual = (state.mode === 'cloud' && state.cloudLayout === 'split');
-  let cx = -8.0, cy = 0.0, cz = isDual ? 100.0 : 108.0;
-  let dist = isDual ? 600.0 : 375.0;
+  let cx = -8.0, cy = 0.0, cz = 90.0;
+  let dist = isDual ? 640.0 : 420.0;
 
-  if (state.mode !== 'cloud' && boundsCenter) {
+  if (preset === 'xy') {
+    cx = 0.0;
+    cy = 0.0;
+    cz = 90.0;
+    dist = isDual ? 980.0 : 560.0;
+  } else if (state.mode !== 'cloud' && boundsCenter) {
     cx = boundsCenter[0];
     cy = boundsCenter[1];
-    cz = 0.5 * (STATION_Z[0] + STATION_Z[STATION_Z.length - 1]) + 10.0;
-    dist = Math.max(spanZ * 1.95, spanXY * 3.1, 320.0);
+    cz = 90.0;
+    dist = Math.max(spanZ * 2.05, spanXY * 3.1, 380.0);
   }
 
   let pos, up;
@@ -192,6 +321,10 @@ function applyCameraPreset(preset, boundsCenter = null, spanXY = 90, spanZ = 180
     up = [1, 0, 0];
   } else if (preset === 'yz') {
     pos = [cx - dist, cy, cz];
+    up = [0, 1, 0];
+  } else if (preset === 'xy') {
+    // Transverse beam's-eye X–Y plane (+X right, +Y up, +Z out of screen)
+    pos = [cx, cy, cz + dist];
     up = [0, 1, 0];
   } else {
     pos = [cx + 0.23 * dist, cy + 0.94 * dist, cz - 0.23 * dist];
@@ -489,7 +622,9 @@ function clearSceneObjects(sc) {
   while (sc.children.length > 0) {
     const obj = sc.children[0];
     sc.remove(obj);
-    if (obj.material) obj.material.dispose();
+    obj.traverse((child) => {
+      if (child.material) child.material.dispose();
+    });
   }
 }
 
@@ -562,10 +697,9 @@ function syncCloudScene(resetCam = false) {
     const specNeither = { key: 'neither', col: COLORS.neither, lMult: 0.48, hMult: 0.78, route: 'GNN' };
 
     const addFrame = (sc) => {
-      const mat = new THREE.LineBasicMaterial({ color: COLORS.station, transparent: true, opacity: 0.28, depthWrite: false });
-      const lines = new THREE.LineSegments(CLOUD_STATION_GEOM, mat);
-      sc.add(lines);
-      return lines;
+      const grp = createTrackerGeometryGroup();
+      sc.add(grp);
+      return grp;
     };
 
     const populatePane = (sc, specs) => {
@@ -798,12 +932,8 @@ async function syncStScene(resetCam = false) {
     if (y < yMin) yMin = y;
     if (y > yMax) yMax = y;
   }
-  const pad = 8;
   if (state.showStations) {
-    const fg = buildStationFramesGeometry({ xMin: xMin - pad, xMax: xMax + pad, yMin: yMin - pad, yMax: yMax + pad });
-    sceneLeft.add(new THREE.LineSegments(fg, new THREE.LineBasicMaterial({
-      color: COLORS.station, transparent: true, opacity: 0.24, depthWrite: false,
-    })));
+    sceneLeft.add(createTrackerGeometryGroup());
   }
 
   const targetSet = new Set(targetHits);
@@ -959,12 +1089,8 @@ async function syncFullScene(resetCam = false) {
     if (y < yMin) yMin = y;
     if (y > yMax) yMax = y;
   }
-  const pad = 8;
   if (state.showStations) {
-    const fg = buildStationFramesGeometry({ xMin: xMin - pad, xMax: xMax + pad, yMin: yMin - pad, yMax: yMax + pad });
-    sceneLeft.add(new THREE.LineSegments(fg, new THREE.LineBasicMaterial({
-      color: COLORS.station, transparent: true, opacity: 0.24, depthWrite: false,
-    })));
+    sceneLeft.add(createTrackerGeometryGroup());
   }
 
   // Layer-colored digitized hits (N1..N6 DS ramp)
@@ -1137,6 +1263,7 @@ function syncUIButtons() {
   document.getElementById('dock-cam-oblique').classList.toggle('active-teal', state.cameraPreset === 'oblique');
   document.getElementById('dock-cam-xz').classList.toggle('active-teal', state.cameraPreset === 'xz');
   document.getElementById('dock-cam-yz').classList.toggle('active-teal', state.cameraPreset === 'yz');
+  document.getElementById('dock-cam-xy').classList.toggle('active-teal', state.cameraPreset === 'xy');
 
   document.getElementById('dock-group-cloud').classList.toggle('hidden', !isCloud);
   document.getElementById('dock-group-single').classList.toggle('hidden', isCloud);
@@ -1384,6 +1511,7 @@ function wireControls() {
   bindClick('dock-cam-oblique', () => triggerPreset('oblique'));
   bindClick('dock-cam-xz', () => triggerPreset('xz'));
   bindClick('dock-cam-yz', () => triggerPreset('yz'));
+  bindClick('dock-cam-xy', () => triggerPreset('xy'));
 
   const zoomStep = (factor) => {
     const offset = camera.position.clone().sub(controls.target).divideScalar(factor);
