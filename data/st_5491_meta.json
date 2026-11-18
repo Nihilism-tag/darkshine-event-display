@@ -1,0 +1,74 @@
+{
+  "file": "st_5491_geom.bin",
+  "ev_start": 0,
+  "ev_end": 5491,
+  "n_events": 5491,
+  "total_bytes": 11816852,
+  "sections": {
+    "pos_off": {
+      "byteOffset": 0,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "positions": {
+      "byteOffset": 21968,
+      "length": 454398,
+      "dtype": "float32"
+    },
+    "layer_id": {
+      "byteOffset": 1839560,
+      "length": 151466,
+      "dtype": "uint8"
+    },
+    "edge_off": {
+      "byteOffset": 1991028,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "edge_u": {
+      "byteOffset": 2012996,
+      "length": 1049702,
+      "dtype": "uint16"
+    },
+    "edge_v": {
+      "byteOffset": 4112400,
+      "length": 1049702,
+      "dtype": "uint16"
+    },
+    "edge_truth": {
+      "byteOffset": 6211804,
+      "length": 1049702,
+      "dtype": "uint8"
+    },
+    "prob_v5": {
+      "byteOffset": 7261508,
+      "length": 1049702,
+      "dtype": "uint16"
+    },
+    "prob_v6": {
+      "byteOffset": 9360912,
+      "length": 1049702,
+      "dtype": "uint16"
+    },
+    "mc_ev_off": {
+      "byteOffset": 11460316,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "mc_trk_off": {
+      "byteOffset": 11482284,
+      "length": 16299,
+      "dtype": "uint32"
+    },
+    "mc_hits": {
+      "byteOffset": 11547480,
+      "length": 102089,
+      "dtype": "uint16"
+    },
+    "mc_ids": {
+      "byteOffset": 11751660,
+      "length": 16298,
+      "dtype": "int32"
+    }
+  }
+}
