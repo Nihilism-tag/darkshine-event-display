@@ -307,7 +307,7 @@ function applyCameraPreset(preset, boundsCenter = null, spanXY = 90, spanZ = 180
     cx = 0.0;
     cy = 0.0;
     cz = 90.0;
-    dist = isDual ? 980.0 : 560.0;
+    dist = isDual ? 1180.0 : 640.0;
   } else if (state.mode !== 'cloud' && boundsCenter) {
     cx = boundsCenter[0];
     cy = boundsCenter[1];
