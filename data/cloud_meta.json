@@ -1,0 +1,95 @@
+{
+  "schema_version": 2,
+  "n_events": 5491,
+  "station_z_mm": [
+    7.83,
+    38.83,
+    89.83,
+    120.83,
+    151.83,
+    180.33
+  ],
+  "verified_cohorts": {
+    "v6": {
+      "both": 1909,
+      "gnn_only": 1329,
+      "ds_only": 232,
+      "neither": 2021
+    },
+    "v5": {
+      "both": 2000,
+      "gnn_only": 1549,
+      "ds_only": 141,
+      "neither": 1801
+    }
+  },
+  "binary_file": "cloud_5491.bin",
+  "total_bytes": 1124592,
+  "sections": {
+    "p_true": {
+      "byteOffset": 0,
+      "length": 5491,
+      "dtype": "float32"
+    },
+    "dx_bend": {
+      "byteOffset": 21964,
+      "length": 5491,
+      "dtype": "float32"
+    },
+    "n_layers": {
+      "byteOffset": 43928,
+      "length": 5491,
+      "dtype": "uint8"
+    },
+    "n_ev_hits": {
+      "byteOffset": 49420,
+      "length": 5491,
+      "dtype": "uint16"
+    },
+    "flags": {
+      "byteOffset": 60404,
+      "length": 5491,
+      "dtype": "uint8"
+    },
+    "truth_off": {
+      "byteOffset": 65896,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "truth_xyz": {
+      "byteOffset": 87864,
+      "length": 80163,
+      "dtype": "float32"
+    },
+    "v5_off": {
+      "byteOffset": 408516,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "v5_xyz": {
+      "byteOffset": 430484,
+      "length": 60123,
+      "dtype": "float32"
+    },
+    "v6_off": {
+      "byteOffset": 670976,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "v6_xyz": {
+      "byteOffset": 692944,
+      "length": 54609,
+      "dtype": "float32"
+    },
+    "ds_off": {
+      "byteOffset": 911380,
+      "length": 5492,
+      "dtype": "uint32"
+    },
+    "ds_xyz": {
+      "byteOffset": 933348,
+      "length": 47811,
+      "dtype": "float32"
+    }
+  }
+}

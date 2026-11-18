@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DarkSHINE Recoil Tracker · 3D Event Cloud &amp; Track Display</title>
+  <link rel="stylesheet" href="./css/ds_phoenix.css" />
+</head>
+<body>
+  <div class="dsv-stage" id="dsv-stage">
+    <canvas id="gl-canvas"></canvas>
+    <canvas id="axes-canvas" width="192" height="192"></canvas>
+
+    <!-- Loading state -->
+    <div class="loading-mask" id="loading-mask">
+      <div class="dsv-brand-italic" style="font-size:15px">DarkSHINE Recoil Tracker</div>
+      <div class="phx-meta-muted" id="loading-text">Loading 5,491 multi-track 3D cloud bundle…</div>
+    </div>
+
+    <!-- Dual Viewport Split Line & Synchronized Pane Badges -->
+    <div class="phx-split-line" id="split-line"></div>
+    <div class="phx-pane-tag phx-pane-tag-left" id="pane-badge-left">V6 Recalled · 3,238 (59.0%)</div>
+    <div class="phx-pane-tag phx-pane-tag-right" id="pane-badge-right">DS Recalled · 2,141 (39.0%)</div>
+
+    <!-- Zone 1: Top-Left Experiment Plaque -->
+    <div class="phx-plaque" id="hud-plaque">
+      <div class="phx-emblem">
+        <div class="phx-emblem-ds">DS</div>
+        <div class="phx-emblem-sub">N6</div>
+      </div>
+      <div style="min-width:0">
+        <div>
+          <span class="dsv-brand-italic">DarkSHINE</span>
+          <span class="dsv-brand-sub">GNN tracking</span>
+        </div>
+        <div class="phx-meta-line" id="plaque-headline">N = 5,491 · V6 59.0% (3,238) vs DS 39.0% (2,141)</div>
+        <div class="phx-meta-muted" id="plaque-subline">V6-only +1,329 · DS-only +232 · Both 1,909</div>
+        <div class="phx-legend-row" id="plaque-legend-cloud">
+          <span class="leg-dot" style="color:#EAECEF">Both</span>
+          <span class="leg-dot" style="color:#178e89">V5</span>
+          <span class="leg-dot" style="color:#8A80F0">V6</span>
+          <span class="leg-dot" style="color:#e68613">DS</span>
+          <span class="leg-dot" style="color:#B85C65">Neither</span>
+        </div>
+        <div class="phx-legend-row hidden" id="plaque-legend-event">
+          <span class="leg-dot" style="color:#EAECEF">Truth</span>
+          <span class="leg-dot" style="color:#178e89">V5</span>
+          <span class="leg-dot" style="color:#8A80F0">V6</span>
+          <span class="leg-dot" style="color:#e68613">DS</span>
+          <span class="leg-dot" style="color:#d9534f">FP</span>
+          <span class="leg-dot" style="color:#d9a441">FN</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone 2: Top-Right Collapsible Layers Menu -->
+    <div class="phx-menu" id="hud-menu">
+      <div class="phx-menu-hdr" id="menu-hdr-toggle">
+        <span>Layers</span>
+        <span id="menu-chevron">▾</span>
+      </div>
+      <div class="phx-menu-body" id="menu-body">
+        <div>
+          <div class="phx-sec-title">Mode &amp; Model</div>
+          <div class="seg-row" style="margin-bottom:6px">
+            <button class="seg-btn active-teal" id="btn-mode-cloud" title="5,491 4-cohort 3D clouds">CLOUD</button>
+            <button class="seg-btn" id="btn-mode-st" title="All 5,491 DS smear=1 multi-track events">EVENT</button>
+            <button class="seg-btn" id="btn-mode-full" title="All 149,859 GNN-digitized events">FULL</button>
+          </div>
+          <div class="slider-row">
+            <div class="seg-row" style="width:78px; flex-shrink:0">
+              <button class="seg-btn" id="btn-model-v5">V5</button>
+              <button class="seg-btn active-violet" id="btn-model-v6">V6</button>
+            </div>
+            <input type="range" id="main-slider" min="0.04" max="0.55" step="0.01" value="0.16" title="Cloud opacity / Edge threshold" />
+            <span class="tabular-val" id="main-slider-val">0.16</span>
+          </div>
+        </div>
+
+        <!-- Cloud Controls -->
+        <div id="cloud-controls-panel">
+          <div class="phx-sec-title">Event Clouds</div>
+          <div class="seg-row" style="margin-bottom:5px">
+            <button class="seg-btn active-violet" id="btn-lay-split">DUAL 3D</button>
+            <button class="seg-btn" id="btn-lay-overlay">OVERLAY</button>
+          </div>
+          <div class="seg-row" id="row-split-pairing" style="margin-bottom:6px">
+            <button class="seg-btn active-teal" id="btn-pair-recall">RECALL</button>
+            <button class="seg-btn" id="btn-pair-quad">4-SPLIT</button>
+          </div>
+
+          <div class="sw-list">
+            <label class="sw-item" style="--sw-col:#8b93a1">
+              <input type="checkbox" id="sw-both" checked />
+              <span class="sw-track"></span>
+              <span>Both recalled</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#665ae0" id="lbl-sw-gnn">
+              <input type="checkbox" id="sw-gnn" checked />
+              <span class="sw-track"></span>
+              <span>GNN-only recalled</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#e68613">
+              <input type="checkbox" id="sw-ds" checked />
+              <span class="sw-track"></span>
+              <span>DS-only recalled</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#B85C65">
+              <input type="checkbox" id="sw-neither" />
+              <span class="sw-track"></span>
+              <span>Neither recalled</span>
+            </label>
+          </div>
+
+          <div class="seg-row" style="margin-top:6px; margin-bottom:5px">
+            <button class="seg-btn active-violet" id="btn-geom-both">ALL</button>
+            <button class="seg-btn" id="btn-geom-lines">TRACKS</button>
+            <button class="seg-btn" id="btn-geom-hits">HITS</button>
+          </div>
+          <div class="seg-row">
+            <button class="seg-btn active-teal" id="btn-coord-truth">TRUTH</button>
+            <button class="seg-btn" id="btn-coord-reco">RECO</button>
+          </div>
+
+          <!-- Collapsible Slices -->
+          <div class="phx-sec-hdr" id="hdr-slices" style="margin-top:8px">
+            <span>Slices</span>
+            <span id="chev-slices">▸</span>
+          </div>
+          <div class="sel-group hidden" id="body-slices">
+            <div class="sel-row">
+              <span>Momentum</span>
+              <select id="sel-mom">
+                <option value="all">All p_true</option>
+                <option value="low">Low (&lt; 300 MeV/c)</option>
+                <option value="mid">Mid (300–900 MeV/c)</option>
+                <option value="high">High (&gt; 900 MeV/c)</option>
+              </select>
+            </div>
+            <div class="sel-row">
+              <span>Occupancy</span>
+              <select id="sel-occ">
+                <option value="all">All occupancy</option>
+                <option value="low">Clean (&lt; 12 hits)</option>
+                <option value="mid">Medium (12–17 hits)</option>
+                <option value="high">Dense (≥ 18 hits)</option>
+              </select>
+            </div>
+            <div class="sel-row">
+              <span>Species</span>
+              <select id="sel-species">
+                <option value="all">e+ &amp; e−</option>
+                <option value="ep">Positron (e+)</option>
+                <option value="em">Electron (e−)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Single-Event Controls (EVENT 5,491 & FULL 149,859) -->
+        <div id="single-controls-panel" class="hidden">
+          <!-- Cohort filter & event jump -->
+          <div id="st-cohort-box">
+            <div class="phx-sec-title">Cohort Filter (5,491)</div>
+            <select id="sel-cohort" style="width:100%; background:#101216; color:#eaecef; border:1px solid rgba(255,255,255,0.18); border-radius:4px; padding:4px 6px; font-size:11px; margin-bottom:4px"></select>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; font-size:10.5px; color:#9aa3b0">
+              <span id="txt-cohort-pos">1 / 1,250 in filter</span>
+              <div style="display:flex; gap:4px">
+                <button class="dock-btn outlined" id="btn-coh-prev" style="padding:2px 7px">◀ Coh</button>
+                <button class="dock-btn outlined" id="btn-coh-next" style="padding:2px 7px">Coh ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:5px; margin-bottom:8px">
+            <span style="font-size:11px; color:#9aa3b0">Event #</span>
+            <input type="number" id="inp-event-idx" min="0" max="5490" value="1613"
+              style="flex:1; min-width:0; background:#101216; color:#eaecef; border:1px solid rgba(255,255,255,0.18); border-radius:4px; padding:3px 6px; font-size:11.5px; font-family:inherit" />
+            <button class="dock-btn outlined" id="btn-jump-go" style="padding:3px 8px">GO</button>
+          </div>
+
+          <div id="st-routes-box">
+            <div class="phx-sec-title">2nd-Track Routes</div>
+            <div class="sw-list">
+              <label class="sw-item" style="--sw-col:#8b93a1">
+                <input type="checkbox" id="sw-st-target" checked />
+                <span class="sw-track"></span>
+                <span>2nd track truth</span>
+              </label>
+              <label class="sw-item" style="--sw-col:#178e89">
+                <input type="checkbox" id="sw-st-v5" checked />
+                <span class="sw-track"></span>
+                <span>V5 route</span>
+              </label>
+              <label class="sw-item" style="--sw-col:#665ae0">
+                <input type="checkbox" id="sw-st-v6" checked />
+                <span class="sw-track"></span>
+                <span>V6 route</span>
+              </label>
+              <label class="sw-item" style="--sw-col:#e68613">
+                <input type="checkbox" id="sw-st-ds" checked />
+                <span class="sw-track"></span>
+                <span>DS route</span>
+              </label>
+              <label class="sw-item" style="--sw-col:#606875">
+                <input type="checkbox" id="sw-st-other" checked />
+                <span class="sw-track"></span>
+                <span>Other candidates &amp; MC</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="phx-sec-hdr" id="hdr-edges" style="margin-top:8px">
+            <span>GNN Edge Graph</span>
+            <span id="chev-edges">▸</span>
+          </div>
+          <div class="sw-list hidden" id="body-edges" style="padding-top:4px">
+            <label class="sw-item" style="--sw-col:#8b93a1">
+              <input type="checkbox" id="sw-edge-truth" />
+              <span class="sw-track"></span>
+              <span>Truth edges</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#665ae0">
+              <input type="checkbox" id="sw-edge-pred" />
+              <span class="sw-track"></span>
+              <span>Predicted edges (≥ thr)</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#d9534f">
+              <input type="checkbox" id="sw-edge-fp" />
+              <span class="sw-track"></span>
+              <span>False positives (FP)</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#d9a441">
+              <input type="checkbox" id="sw-edge-fn" />
+              <span class="sw-track"></span>
+              <span>False negatives (FN)</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#555d69">
+              <input type="checkbox" id="sw-edge-cand" />
+              <span class="sw-track"></span>
+              <span>All candidate edges</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#178e89" id="row-sw-full-mc">
+              <input type="checkbox" id="sw-full-mc" checked />
+              <span class="sw-track"></span>
+              <span>MC truth tracks</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Collapsible Detector -->
+        <div>
+          <div class="phx-sec-hdr" id="hdr-detector">
+            <span>Detector</span>
+            <span id="chev-detector">▸</span>
+          </div>
+          <div class="sw-list hidden" id="body-detector" style="padding-top:4px">
+            <label class="sw-item" style="--sw-col:#777f8c">
+              <input type="checkbox" id="sw-stations" checked />
+              <span class="sw-track"></span>
+              <span>N1–N6 station frames</span>
+            </label>
+            <label class="sw-item" style="--sw-col:#178e89" id="row-sw-bg-hits">
+              <input type="checkbox" id="sw-bg-hits" checked />
+              <span class="sw-track"></span>
+              <span>Digitized hits</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone 3: Bottom-Left Summary / Diagnostics Card -->
+    <div class="phx-card" id="hud-card">
+      <div class="phx-card-tabs">
+        <button class="tab-btn active" id="tab-summary">SUMMARY</button>
+        <button class="tab-btn" id="tab-diagnostics">DIAGNOSTICS</button>
+        <button class="card-collapse-btn" id="btn-card-collapse" title="Collapse / expand card">▾</button>
+      </div>
+      <div class="phx-card-body" id="card-body">
+        <!-- Cloud Summary (Primary Visual Layer) -->
+        <div id="summary-cloud">
+          <div class="stat-row" style="margin-bottom:5px">
+            <span class="pill-tag" style="color:#EAECEF">BOTH</span>
+            <span id="txt-cloud-both">1,909 (34.8%) · p_med 526 MeV/c · |Δx| 13.4 mm</span>
+          </div>
+          <div class="stat-row" style="margin-bottom:5px">
+            <span class="pill-tag" id="pill-cloud-gnn" style="color:#8A80F0">GNN+</span>
+            <span id="txt-cloud-gnn">1,329 (24.2%) · p_med 848 MeV/c · |Δx| 8.6 mm</span>
+          </div>
+          <div class="stat-row" style="margin-bottom:5px">
+            <span class="pill-tag" style="color:#e68613">DS+</span>
+            <span id="txt-cloud-ds">232 (4.2%) · p_med 415 MeV/c · |Δx| 11.6 mm</span>
+          </div>
+          <div class="stat-row">
+            <span class="pill-tag" style="color:#B85C65">MISS</span>
+            <span id="txt-cloud-neither">2,021 (36.8%) · p_med 227 MeV/c · |Δx| 6.8 mm</span>
+          </div>
+        </div>
+
+        <!-- 2nd-Track Single-Event Summary (Primary Visual Layer) -->
+        <div id="summary-st" class="hidden">
+          <div class="st-hdr-line" id="txt-st-hdr">e+ · p_true 480.2 MeV/c · 5 layers</div>
+          <div class="stat-row" style="margin-bottom:4px">
+            <span class="pill-tag" style="color:#178e89">V5</span>
+            <span id="txt-st-v5"></span>
+          </div>
+          <div class="stat-row" style="margin-bottom:4px">
+            <span class="pill-tag" style="color:#8A80F0">V6</span>
+            <span id="txt-st-v6"></span>
+          </div>
+          <div class="stat-row" style="margin-bottom:5px">
+            <span class="pill-tag" style="color:#e68613">DS</span>
+            <span id="txt-st-ds"></span>
+          </div>
+          <div class="st-note" id="txt-st-note"></div>
+        </div>
+
+        <!-- Full GNN (149,859) Summary -->
+        <div id="summary-full" class="hidden">
+          <div class="st-hdr-line" id="txt-full-hdr">Full GNN Sample · Event #0 / 149,859</div>
+          <div class="stat-row" style="margin-bottom:4px">
+            <span class="pill-tag" id="pill-full-model" style="color:#8A80F0">V6</span>
+            <span id="txt-full-metrics"></span>
+          </div>
+          <div class="stat-row">
+            <span class="pill-tag" style="color:#EAECEF">MC</span>
+            <span id="txt-full-mc"></span>
+          </div>
+        </div>
+
+        <!-- Diagnostics (Secondary Visual Layer) -->
+        <div id="diagnostics-pane" class="diag-box hidden"></div>
+      </div>
+    </div>
+
+    <!-- Zone 4: Bottom-Center Floating Phoenix Pill Dock -->
+    <div class="phx-dock" id="hud-dock">
+      <button class="dock-btn" id="dock-zoom-out" title="Zoom out">−</button>
+      <button class="dock-btn" id="dock-zoom-in" title="Zoom in">+</button>
+      <div class="dock-sep"></div>
+      <button class="dock-btn active-teal" id="dock-cam-oblique">3D</button>
+      <button class="dock-btn" id="dock-cam-xz">X–Z</button>
+      <button class="dock-btn" id="dock-cam-yz">Y–Z</button>
+      <div class="dock-sep"></div>
+
+      <!-- Cloud Dock Group -->
+      <div id="dock-group-cloud" style="display:flex; align-items:center; gap:5px">
+        <button class="dock-btn active-violet" id="dock-split">DUAL SYNC 3D</button>
+        <button class="dock-btn" id="dock-overlay">SINGLE OVERLAY</button>
+        <div class="dock-sep"></div>
+        <button class="dock-btn active-teal" id="dock-pair-recall">GNN VS DS</button>
+        <button class="dock-btn" id="dock-pair-quad">4-COHORT</button>
+        <button class="dock-btn outlined" id="dock-go-st">SINGLE EVT ▶</button>
+      </div>
+
+      <!-- Single Event Dock Group (EVENT 5,491 & FULL 149,859) -->
+      <div id="dock-group-single" class="hidden" style="display:flex; align-items:center; gap:5px">
+        <button class="dock-btn outlined" id="dock-back-cloud">◀ CLOUD</button>
+        <div id="dock-cases-wrap" style="display:flex; align-items:center; gap:4px">
+          <button class="dock-btn active-violet" id="dock-case-0">CASE A</button>
+          <button class="dock-btn" id="dock-case-1">CASE B</button>
+          <button class="dock-btn" id="dock-case-2">CASE C</button>
+          <div class="dock-sep"></div>
+        </div>
+        <button class="dock-btn" id="dock-ev-prev" title="Previous event">◀</button>
+        <span id="dock-ev-pos" style="font-size:11px; padding:0 4px; font-variant-numeric:tabular-nums">#1,613 / 5,491</span>
+        <button class="dock-btn" id="dock-ev-next" title="Next event">▶</button>
+      </div>
+
+      <div class="dock-sep"></div>
+      <button class="dock-btn" id="dock-clean" title="Clean screenshot view (hide HUD)">⛶</button>
+    </div>
+
+    <button class="clean-exit hidden" id="btn-exit-clean">Show HUD</button>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
